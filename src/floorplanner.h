@@ -6,6 +6,8 @@
 #include <map>
 #include "module.h"
 #include "BstarTree.h"
+#include <math.h> 
+#include <queue>
 using namespace std;
 
 
@@ -19,6 +21,7 @@ public:
         _BestTree(new BstarTree), _PreTree(new BstarTree) {
         parseInput(input_blk_file,input_net_file);
         _Contour = new Contour(_OutlineW);
+        _Contour2 = new Contour2();
         // _partSize[0] = 0;
         // _partSize[1] = 0;
     }
@@ -33,6 +36,8 @@ public:
     void floorplan();
     void CreateBtree();
     void place(Node* parent, Node* node, int RL);
+    void place2();
+    void place3();
     double WireLength();
     void plot(string file_name);
     void showResult();
@@ -41,6 +46,7 @@ public:
     void bestTreeUpdate();
     void SA();
     Node* ramdomPickNode();
+    Node* ramdomPickNode2();
 
 
     int getOutlineW() {return _OutlineW;}
@@ -70,9 +76,12 @@ private:
     BstarTree*          _BestTree;
     BstarTree*          _PreTree;
     Contour*            _Contour;
+    Contour2*           _Contour2;
     double              _Anorm;
     double              _Wnorm;
-
+    queue<Node*>        _nodeQueue;
+    queue<Node*>        _nodeQueueR;
+    queue<Node*>        _nodeQueueL;
     // Clean up partitioner
     void clear();
 };

@@ -119,6 +119,8 @@ public:
                         _block(block), _IamRoot(false), _rotate(false) {block->setNode(this);}
     Node(Node* node) :   _left(node->getChild(1)), _right(node->getChild(0)), _parent(node->getParent()),  
                         _block(node->getBlock()), _rotate(false), _IamRoot(node->AmIRoot()) {_block->setNode(this);}
+    Node(Node* node, int choose) :   _left(node->getChild(1)), _right(node->getChild(0)), _parent(node->getParent()),  
+                        _block(node->getBlock()), _rotate(false), _IamRoot(node->AmIRoot()) {}
     ~Node()  { }
 
     // getter

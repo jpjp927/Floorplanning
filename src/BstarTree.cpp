@@ -31,6 +31,7 @@ void BstarTree::InitBtree(Node* node, vector<Block*> blkArray, BstarTree* _Bstar
 
         // if (right >= blkArray.size()) return;
         // cout << start << ", " << end << ", " << left << ", " << right<< endl;
+        
         if (blkArray[left]->getNode() == nullptr) {
             Node* nodeL = new Node(blkArray[left]);
             insert(node, nodeL, 1);
@@ -66,9 +67,7 @@ void BstarTree::replace(BstarTree* otherTree){
     
     deleteTree(root);
     // otherTree->print_bin_tree(otherTree->getRoot());
-    // cout << endl;
     clone(otherTree->getRoot(), nullptr, 0);
-    // cout << " ---------" << endl;
     setCost(otherTree->getCost());
 }
 
@@ -155,6 +154,7 @@ void BstarTree::deleteNode(Node* node){
 
 void BstarTree::swap(Node* parent,Node* child, int RL){
     Node* pparent = parent->getParent();
+    if (pparent == nullptr) return;
     int RLofParent;
     if (pparent->getChild(0) == parent) RLofParent = 0;
     else RLofParent = 1;
@@ -162,7 +162,7 @@ void BstarTree::swap(Node* parent,Node* child, int RL){
     pparent->setChild(child, RLofParent);
     child->setParent(pparent);
 
-    parent->getChild(!RL)->setParent(child);
+    if(parent->getChild(!RL)) parent->getChild(!RL)->setParent(child);
 
     if(child->getChild(!RL) != nullptr) child->getChild(!RL)->setParent(parent);
     Node* temp = parent->getChild(!RL);
@@ -176,6 +176,63 @@ void BstarTree::swap(Node* parent,Node* child, int RL){
     child->setChild(parent, RL);
     parent->setParent(child);
 }
+
+
+void BstarTree::randomSwap(Node* node1,Node* node2){
+    if (node1 == node2) return;
+    if ((node1 == nullptr) || (node2 == nullptr)) return;
+    if (node1 = node2->getParent()) {
+        int RLofNode2;
+        if (node1->getChild(0) == node2) RLofNode2 = 0;
+        else RLofNode2 = 1;
+        swap(node1, node2, RLofNode2);
+        return;
+    }
+    else if (node2 = node1->getParent()){
+        int RLofNode1;
+        if (node2->getChild(0) == node1) RLofNode1 = 0;
+        else RLofNode1 = 1;
+        swap(node2, node1, RLofNode1);
+        return;
+    }
+
+
+    Node* tempNode = new Node(node1, 0);
+
+    int RLofNode2;
+    int RLofNode1;
+    if (node2->getParent()->getChild(0) == node2) RLofNode2 = 0;
+    else RLofNode2 = 1;
+    if (node1->getParent()->getChild(0) == node1) RLofNode1 = 0;
+    else RLofNode1 = 1;
+    
+    node1->setParent(node2->getParent());
+    node1->setChild(node2->getChild(1), 1);
+    node1->setChild(node2->getChild(0), 0);
+    node2->getParent()->setChild(node1, RLofNode2);
+    
+    if(node2->getChild(1) != nullptr) node2->getChild(1)->setParent(node1);
+    if(node2->getChild(0) != nullptr) node2->getChild(0)->setParent(node1);
+    
+    node2->setParent(tempNode->getParent());
+    node2->setChild(tempNode->getChild(1), 1);
+    node2->setChild(tempNode->getChild(0), 0);
+    tempNode->getParent()->setChild(node2, RLofNode1);
+    if(tempNode->getChild(1) != nullptr) tempNode->getChild(1)->setParent(node2);
+    if(tempNode->getChild(0) != nullptr) tempNode->getChild(0)->setParent(node2);
+
+    delete tempNode;
+}
+
+void BstarTree::randomSwapTree (Node* node){
+    Node* node0 = node->getChild(0);
+    Node* node1 = node->getChild(1);
+
+    node->setChild(node1, 0);
+    node->setChild(node0, 1);
+}
+
+
 
 
 void Contour::upDateContour(Contour* contour, int startX, int endX, int hight){
@@ -225,4 +282,75 @@ int Contour::maxInRegion( int startX, int endX){
 
     return hightest;
 }
+
+
+void Contour2::updateContour2(int start, int end, int y2){
+    bool flag = false;
+    bool flag2 = false;
+    int is = 0;
+    int ie = 0;
+
+    for (int i=0;i<_yContour2.size();i++){
+        if ((_yContour2[i].front() == start) && (flag == false)){
+            _yContour2[i] = {start, _yContour2[i][1], y2};
+            flag = true;
+            is = i;
+            break;
+        }
+        if ((_yContour2[i].front() > start) && (flag == false)){
+            insertBefore(i,{ start, _yContour2[i][1], y2 });
+            flag = true;
+            is = i;
+            break;
+        }
+    }
+
+    for (int i=0;i<_yContour2.size();i++){
+        if ((_yContour2[i].front() == end) && (flag2 == false)){
+            _yContour2[i] = {end, y2, _yContour2[i][2]};
+            flag2 = true;
+            ie = i;
+            break;
+        }
+
+        if ((_yContour2[i].front() > end) && (flag2 == false)){
+            insertBefore(i,{ end, y2, _yContour2[i][1] });
+            flag2 = true;
+            ie = i;
+            break;
+        }
+    }
+    if((is+1)!=ie) _yContour2.erase(_yContour2.begin()+is+1,_yContour2.begin()+ie);
+    if (getPreY1(is) == getPreY2(is)) _yContour2.erase(_yContour2.begin()+is);
+    // if (getPreY1(ie) == getPreY2(ie)) _yContour2.erase(_yContour2.begin()+ie);
+
+}
+
+int Contour2::maxInRegion2(int startX, int endX){
+    int maxi = 0;
+    for (int i=0;i<_yContour2.size()-1;i++){
+        if ((_yContour2[i].front() > startX) && (_yContour2[i].front() < endX)){
+            if (max(getPreY1(i),getPreY2(i)) > maxi){
+                maxi = max(getPreY1(i),getPreY2(i));
+            }
+        }
+        if (_yContour2[i].front() == startX) maxi = max(maxi, getPreY2(i));
+        if (_yContour2[i].front() == endX) maxi = max(maxi, getPreY1(i));
+
+        if ((_yContour2[i].front() < startX) && (_yContour2[i].front() < endX) && (_yContour2[i+1].front() > startX) && (_yContour2[i+1].front() > endX)){
+            maxi = getPreY2(i);
+        }
+
+        if (_yContour2[i].front() > endX) return maxi; //提早結束
+    }
+    return maxi;
+}
+
+void Contour2::resetContour2(){
+    _yContour2.clear();
+    _yContour2.push_back({0,0,0}); 
+    _yContour2.push_back({2147483647,0,0}); 
+}
+
+
 

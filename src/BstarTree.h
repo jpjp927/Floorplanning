@@ -32,7 +32,9 @@ public:
     void deleteTree(Node* oldNode);
     void deleteNode(Node* node);
     void swap(Node* parent,Node* child, int RL);
+    void randomSwap(Node* node1,Node* node2);
     void randomInsert(Node* node, Node* pos);
+    void randomSwapTree (Node* node);
 
 private:
     Node *root;
@@ -67,4 +69,26 @@ private:
     vector<pair<int, int>> _yContour;
     int _W;
 
+};
+
+
+
+
+class Contour2
+{
+public:
+    Contour2()  {_yContour2.push_back({0,0,0}); _yContour2.push_back({2147483647,0,0});}
+    ~Contour2()  {}
+
+    void insertBefore(int i,vector<int> a) {_yContour2.insert(_yContour2.begin()+i,a);}
+    void updateContour2(int start, int end, int y2);
+
+    int getPreY1(int i) {return _yContour2[i][1];}
+    int getPreY2(int i) {return _yContour2[i][2];}
+    int maxInRegion2(int startX, int endX);
+
+    void resetContour2();
+    vector <vector<int>> getContour(){return _yContour2;}
+private:
+    vector <vector<int>> _yContour2;
 };
