@@ -67,7 +67,8 @@ void Floorplanner::floorplan()
     CreateBtree();
     // _nodeQueue.push(_BstarTree->getRoot());
     // _Contour->resetContour();
-    _Contour2->resetContour2();
+    // _Contour2->resetContour2();
+    _Contour3->resetContour3();
     _BstarTree->setMaxX(0);
     _BstarTree->setMaxY(0);
     // place();
@@ -83,10 +84,25 @@ void Floorplanner::floorplan()
     // cout << endl;
     _BestTree->replace(_BstarTree);
     _PreTree->replace(_BstarTree);
+    _legalbestTree->replace(_BstarTree);
     bestTreeUpdate();
     
     SA();
-    _BstarTree->replace(_BestTree);
+    // _BstarTree->replace(_BestTree);
+    _BstarTree->replace(_legalbestTree);
+    // _Contour2->resetContour2();
+    _Contour3->resetContour3();
+    _BstarTree->setMaxX(0);
+    _BstarTree->setMaxY(0);
+    place(nullptr, _BstarTree->getRoot(), 0);
+
+    // for (int k=0;k<_blkArray.size();k++){
+    //     _BstarTree->setMaxX(max(_BstarTree->getMaxX(), _blkArray[k]->getX2()));
+    //     _BstarTree->setMaxY(max(_BstarTree->getMaxY(), _blkArray[k]->getY2()));
+    // }
+
+    // cout << _legalbestTree->getMaxY() << endl;
+    
     plot("plot.png");
     showResult();
     
@@ -143,7 +159,8 @@ void Floorplanner::place(Node* parent, Node* node, int RL){
     if (node->AmIRoot()){
         block->setPos(0, 0, block->getWidth(rotate), block->getHeight(rotate));
         // _Contour->upDateContour(_Contour, 0, block->getWidth(rotate), block->getHeight(rotate));
-        _Contour2->updateContour2(0, block->getWidth(rotate), block->getHeight(rotate));
+        // _Contour2->updateContour2(0, block->getWidth(rotate), block->getHeight(rotate));
+        _Contour3->updateContour3(0, block->getWidth(rotate), block->getHeight(rotate));
         node->getBlock()->_placed =2;
         
     }
@@ -151,9 +168,11 @@ void Floorplanner::place(Node* parent, Node* node, int RL){
         Block* parentblock = parent->getBlock();
         if (RL == 0){   //R = 0, L = 1
             // block->setPos(parentblock->getX1(), _Contour->maxInRegion(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour->maxInRegion(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
-            block->setPos(parentblock->getX1(), _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
+            // block->setPos(parentblock->getX1(), _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
+            block->setPos(parentblock->getX1(), _Contour3->maxInRegion3(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour3->maxInRegion3(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
             // _Contour->upDateContour(_Contour, block->getX1(), block->getX1() + block->getWidth(rotate), block->getHeight(rotate));
-            _Contour2->updateContour2(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
+            // _Contour2->updateContour2(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
+            _Contour3->updateContour3(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
         }
 
         if (RL == 1){   //R = 0, L = 1
@@ -163,25 +182,27 @@ void Floorplanner::place(Node* parent, Node* node, int RL){
             // }
             // else 
                 // y1 = _Contour->maxInRegion(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
-                y1 = _Contour2->maxInRegion2(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
+                // y1 = _Contour2->maxInRegion2(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
+            y1 = _Contour3->maxInRegion3(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
 
             block->setPos(parentblock->getX2(), y1, parentblock->getX2() + block->getWidth(rotate),  y1 + block->getHeight(rotate));
 
 
 
             // _Contour->upDateContour(_Contour, block->getX1(), block->getX2(), block->getHeight(rotate));
-            _Contour2->updateContour2( block->getX1(), block->getX2(), block->getY2());
+            // _Contour2->updateContour2( block->getX1(), block->getX2(), block->getY2());
+            _Contour3->updateContour3( block->getX1(), block->getX2(), block->getY2());
         }
         node->getBlock()->_placed = 1;
     }
     
     // cout  << block->getX1() << ", " << block->getY1() << ", " <<block->getX2() << ", " << block->getY2() << endl;
     
-    _BstarTree->setMaxX(max(block->getX2(), _BstarTree->getMaxX()));
-    _BstarTree->setMaxY(max(block->getY2(), _BstarTree->getMaxY()));
-
     place(node, node->getChild(1), 1);
     place(node, node->getChild(0), 0);
+    
+    _BstarTree->setMaxX(max(block->getX2(), _BstarTree->getMaxX()));
+    _BstarTree->setMaxY(max(block->getY2(), _BstarTree->getMaxY()));
     
 
 }
@@ -201,7 +222,8 @@ void Floorplanner::place2(){
 
         if (node->AmIRoot()){
             block->setPos(0, 0, block->getWidth(rotate), block->getHeight(rotate));
-            _Contour2->updateContour2(0, block->getWidth(rotate), block->getHeight(rotate));
+            // _Contour2->updateContour2(0, block->getWidth(rotate), block->getHeight(rotate));
+            _Contour3->updateContour3(0, block->getWidth(rotate), block->getHeight(rotate));
         }
 
         else{
@@ -212,17 +234,22 @@ void Floorplanner::place2(){
             Block* parentblock = parent->getBlock();
 
             if (RL == 0){   //R = 0, L = 1
-                block->setPos(parentblock->getX1(), _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
-                _Contour2->updateContour2(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
+                // block->setPos(parentblock->getX1(), _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
+                // _Contour2->updateContour2(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
+                block->setPos(parentblock->getX1(), _Contour3->maxInRegion3(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour3->maxInRegion3(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
+                _Contour3->updateContour3(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
             }
 
             if (RL == 1){   //R = 0, L = 1
                 int y1 = 0;
-                y1 = _Contour2->maxInRegion2(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
+                // y1 = _Contour2->maxInRegion2(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
+                y1 = _Contour3->maxInRegion3(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
+
 
                 block->setPos(parentblock->getX2(), y1, parentblock->getX2() + block->getWidth(rotate),  y1 + block->getHeight(rotate));
 
-                _Contour2->updateContour2( block->getX1(), block->getX2(), block->getY2());
+                // _Contour2->updateContour2( block->getX1(), block->getX2(), block->getY2());
+                _Contour3->updateContour3( block->getX1(), block->getX2(), block->getY2());
             }
         }
 
@@ -260,7 +287,8 @@ void Floorplanner::place3(){
 
         if (node->AmIRoot()){
             block->setPos(0, 0, block->getWidth(rotate), block->getHeight(rotate));
-            _Contour2->updateContour2(0, block->getWidth(rotate), block->getHeight(rotate));
+            // _Contour2->updateContour2(0, block->getWidth(rotate), block->getHeight(rotate));
+            _Contour3->updateContour3(0, block->getWidth(rotate), block->getHeight(rotate));
         }
 
         else{
@@ -271,17 +299,21 @@ void Floorplanner::place3(){
             Block* parentblock = parent->getBlock();
 
             if (RL == 0){   //R = 0, L = 1
-                block->setPos(parentblock->getX1(), _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
-                _Contour2->updateContour2(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
+                // block->setPos(parentblock->getX1(), _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour2->maxInRegion2(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
+                // _Contour2->updateContour2(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
+                block->setPos(parentblock->getX1(), _Contour3->maxInRegion3(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)), parentblock->getX1() + block->getWidth(rotate),  _Contour3->maxInRegion3(parentblock->getX1(),parentblock->getX1() + block->getWidth(rotate)) + block->getHeight(rotate));
+                _Contour3->updateContour3(block->getX1(), block->getX1() + block->getWidth(rotate), block->getY2());
             }
 
             if (RL == 1){   //R = 0, L = 1
                 int y1 = 0;
-                y1 = _Contour2->maxInRegion2(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
+                // y1 = _Contour2->maxInRegion2(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
+                y1 = _Contour3->maxInRegion3(parentblock->getX2(),parentblock->getX2()+block->getWidth(rotate));
 
                 block->setPos(parentblock->getX2(), y1, parentblock->getX2() + block->getWidth(rotate),  y1 + block->getHeight(rotate));
 
-                _Contour2->updateContour2( block->getX1(), block->getX2(), block->getY2());
+                // _Contour2->updateContour2( block->getX1(), block->getX2(), block->getY2());
+                _Contour3->updateContour3( block->getX1(), block->getX2(), block->getY2());
             }
         }
 
@@ -338,29 +370,37 @@ void Floorplanner::calCost(){
     double dH = max(_BstarTree->getMaxY() - _OutlineH, 0);
     // _BstarTree->setCost(cost);
     if (((_BstarTree->getMaxX() - _OutlineW)> 0) || (_BstarTree->getMaxY() - _OutlineH) > 0)
-        _BstarTree->setCost(dW/_OutlineW  + dH/_OutlineH);
+        _BstarTree->setCost(100000*dW/_OutlineW  + 100000*dH/_OutlineH);
     else _BstarTree->setCost(cost);
 }
 
 
-void Floorplanner::bestTreeUpdate(){
+bool Floorplanner::bestTreeUpdate(){
+    bool flag = false;
     if (_BestTree->getCost() > _BstarTree->getCost()){
         _BestTree->replace(_BstarTree);
         // cout << "hi " << endl;
+        flag = true;
     }
-    // _PreTree->replace(_BstarTree);
-    // cout << _BestTree->getCost() << ", " << _BstarTree->getCost() << endl;
+    if ((_BstarTree->getMaxX() < _OutlineW) && (_BstarTree->getMaxY() < _OutlineH) && (_legalbestTree->getCost() > _BstarTree->getCost())){
+        _legalbestTree->replace(_BstarTree);
+        cout << _BstarTree->getMaxX() << ", "<< _BstarTree->getMaxY() << endl;
+        cout << " !!!!!!!!!!!!!!!!!!!!!!" << endl;
+    }
+    return flag;
 }
 
 void Floorplanner::SA(){
     double T = 1000;
-    int P = 50;
-    double decay = 0.95;
+    int P = 1000;
+    double decay = 0.99;
+    int heatTimes = 5;
+    int reT = 100;
     srand(5435);
 
     while (T >= 0.01){
         for (int i=0;i<P;i++){
-            int Case = rand() % 4;
+            int Case = rand() % 3;
             Node* node = ramdomPickNode();
             Node* node2 = ramdomPickNode();
             // _BstarTree->print_bin_tree(_BstarTree->getRoot());
@@ -372,7 +412,8 @@ void Floorplanner::SA(){
                 node->Rotate();
                 node2->Rotate();
                 // _Contour->resetContour();
-                _Contour2->resetContour2();
+                // _Contour2->resetContour2();
+                _Contour3->resetContour3();
                 _BstarTree->setMaxX(0);
                 _BstarTree->setMaxY(0);
                 place(nullptr, _BstarTree->getRoot(), 0);
@@ -384,7 +425,8 @@ void Floorplanner::SA(){
                 _BstarTree->deleteNode(node);
                 _BstarTree->randomInsert(node, _BstarTree->getRoot());
                 // _Contour->resetContour();
-                _Contour2->resetContour2();
+                // _Contour2->resetContour2();
+                _Contour3->resetContour3();
                 // cout << "2" << endl;
                 _BstarTree->setMaxX(0);
                 _BstarTree->setMaxY(0);
@@ -400,7 +442,8 @@ void Floorplanner::SA(){
 
                 // _BstarTree->print_bin_tree(_BstarTree->getRoot());
                 // _Contour->resetContour();
-                _Contour2->resetContour2();
+                // _Contour2->resetContour2();
+                _Contour3->resetContour3();
                 _BstarTree->setMaxX(0);
                 _BstarTree->setMaxY(0);
                 place(nullptr, _BstarTree->getRoot(), 0);
@@ -410,7 +453,8 @@ void Floorplanner::SA(){
 
             case 3:
                 _BstarTree->randomSwapTree(node2);
-                _Contour2->resetContour2();
+                // _Contour2->resetContour2();
+                _Contour3->resetContour3();
                 _BstarTree->setMaxX(0);
                 _BstarTree->setMaxY(0);
                 place(nullptr, _BstarTree->getRoot(), 0);
@@ -418,7 +462,10 @@ void Floorplanner::SA(){
             break;
             }
 
-            
+            // for (int k=0;k<_blkArray.size();k++){
+            //     _BstarTree->setMaxX(max(_BstarTree->getMaxX(), _blkArray[k]->getX2()));
+            //     _BstarTree->setMaxY(max(_BstarTree->getMaxY(), _blkArray[k]->getY2()));
+            // }
 
 
 
@@ -431,12 +478,18 @@ void Floorplanner::SA(){
             double prob = min(1., exp(-delta / T));
             // // restore undo the operation by probability
             double r = ((double) rand() / (RAND_MAX));
-            if (r > prob)
+            if (bestTreeUpdate());
+            else if (r > prob)
             {
                 _BstarTree->replace(_PreTree);
             }
 
-            bestTreeUpdate();
+            // bestTreeUpdate();
+        }
+
+        if ((T < 1) && (heatTimes != 0)){
+            T = reT;
+            heatTimes--;
         }
 
         T *= decay;
@@ -479,6 +532,7 @@ void Floorplanner::showResult(){
     cout << " Wire Length: " << _BstarTree->getWL() << endl;
     cout << " Area: " << _BstarTree->getArea() << endl;
     cout << " Cost: " << _BstarTree->getCost() << endl;
+    cout << " Program runtime: " << get_time() << " sec\n" << endl;
     cout << "*************************" << endl;
 }
 
@@ -522,10 +576,10 @@ void Floorplanner::plot(string file_name)
     gnu_file << "set arrow from 0," << _OutlineH << " to " << _OutlineW << "," << _OutlineH << " nohead lc 3 lw 5" << endl;
     gnu_file << "set arrow from " << _OutlineW << ",0 to " << _OutlineW << "," << _OutlineH << " nohead lc 3 lw 5" << endl;
     gnu_file << "set term png size 2000,2000" << endl;
-    // for (auto con : _Contour2-> getContour()){
-    //     gnu_file << "set arrow from " << con.front() << ",0 to " << con.front() << "," << _OutlineH*5 << " nohead lc 3 lw 6" << endl;
-    //     gnu_file << "set arrow from 0," << con[2] << " to " << _OutlineW << "," << con[2] << " nohead lc 4 lw 5" << endl;
-    // }
+    for (auto con : _Contour3-> getContour3()){
+        gnu_file << "set arrow from " << con.front() << ",0 to " << con.front() << "," << _OutlineH*5 << " nohead lc 7 lw 6" << endl;
+        gnu_file << "set arrow from 0," << con[2] << " to " << _OutlineW << "," << con[2] << " nohead lc 4 lw 5" << endl;
+    }
     gnu_file << "set output \'" << plot_dir << "/" << file_name << "\'" << endl;
     gnu_file << "plot \'" << data_path  << endl;
     data_file.close();

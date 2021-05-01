@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <ctime>
 #include "module.h"
 #include "BstarTree.h"
 #include <math.h> 
@@ -18,10 +19,12 @@ public:
     Floorplanner(fstream& input_blk_file,fstream& input_net_file) :
         _OutlineW(0), _OutlineH(0), _NumBlocks(0), _NumTerminals(0),
         _NumNets(0), _BstarTree(new BstarTree), _Anorm(1), _Wnorm(1), 
-        _BestTree(new BstarTree), _PreTree(new BstarTree) {
+        _BestTree(new BstarTree), _PreTree(new BstarTree),
+        start_time(clock()), _legalbestTree(new BstarTree) {
         parseInput(input_blk_file,input_net_file);
         _Contour = new Contour(_OutlineW);
         _Contour2 = new Contour2();
+        _Contour3 = new Contour3();
         // _partSize[0] = 0;
         // _partSize[1] = 0;
     }
@@ -43,7 +46,7 @@ public:
     void showResult();
     void calArea(); 
     void calCost(); 
-    void bestTreeUpdate();
+    bool bestTreeUpdate();
     void SA();
     Node* ramdomPickNode();
     Node* ramdomPickNode2();
@@ -52,7 +55,7 @@ public:
     int getOutlineW() {return _OutlineW;}
 
     void setAlpha(double a) {_Alpha = a;}
-    
+    double get_time() const {return (double)(clock() - start_time) / CLOCKS_PER_SEC;}
 
     // void setNorm(double A, double W) {_Anorm = A;   _Wnorm = W;}
 
@@ -75,13 +78,16 @@ private:
     BstarTree*          _BstarTree;
     BstarTree*          _BestTree;
     BstarTree*          _PreTree;
+    BstarTree*          _legalbestTree;
     Contour*            _Contour;
     Contour2*           _Contour2;
+    Contour3*           _Contour3;
     double              _Anorm;
     double              _Wnorm;
     queue<Node*>        _nodeQueue;
     queue<Node*>        _nodeQueueR;
     queue<Node*>        _nodeQueueL;
+    clock_t start_time;
     // Clean up partitioner
     void clear();
 };

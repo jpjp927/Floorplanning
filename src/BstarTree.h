@@ -67,6 +67,7 @@ public:
     
 private:
     vector<pair<int, int>> _yContour;
+    
     int _W;
 
 };
@@ -77,18 +78,52 @@ private:
 class Contour2
 {
 public:
-    Contour2()  {_yContour2.push_back({0,0,0}); _yContour2.push_back({2147483647,0,0});}
+    Contour2()  {
+        _yContour2.push_back({0,0,0}); 
+        _yContour2.push_back({2147483647,0,0});
+    }
     ~Contour2()  {}
 
     void insertBefore(int i,vector<int> a) {_yContour2.insert(_yContour2.begin()+i,a);}
+
     void updateContour2(int start, int end, int y2);
 
     int getPreY1(int i) {return _yContour2[i][1];}
     int getPreY2(int i) {return _yContour2[i][2];}
+    
     int maxInRegion2(int startX, int endX);
 
     void resetContour2();
+
     vector <vector<int>> getContour(){return _yContour2;}
 private:
     vector <vector<int>> _yContour2;
+};
+
+
+
+
+class Contour3
+{
+public:
+    Contour3()  {
+        _yContour3.push_back({0,0,0}); 
+        _yContour3.push_back({2147483647,0,0});
+    }
+    ~Contour3()  {}
+
+    void insertBefore(list<vector<int>>::iterator it,vector<int> a) {_yContour3.insert(it,1,a);}
+
+    void updateContour3(int start, int end, int y2);
+
+    int getPreY1(list<vector<int>>::iterator i) {return (*i)[1];}
+    int getPreY2(list<vector<int>>::iterator i) {return (*i)[2];}
+    
+    int maxInRegion3(int startX, int endX);
+
+    void resetContour3();
+
+    list <vector<int>> getContour3(){return _yContour3;}
+private:
+    list <vector<int>> _yContour3;
 };

@@ -1,7 +1,7 @@
 #include "BstarTree.h"
 #include "module.h"
 #include "iostream"
-
+#include <iterator>
 using namespace std;
 
 bool BstarTree::insert(Node *parent, Node *node, int RL)
@@ -69,6 +69,10 @@ void BstarTree::replace(BstarTree* otherTree){
     // otherTree->print_bin_tree(otherTree->getRoot());
     clone(otherTree->getRoot(), nullptr, 0);
     setCost(otherTree->getCost());
+    setMaxX(otherTree->getMaxX());
+    setMaxY(otherTree->getMaxY());
+    setWL(otherTree->getWL());
+    setArea(otherTree->getArea());
 }
 
 void BstarTree::clone(Node *oldNode, Node* newParent, int RL){
@@ -352,5 +356,124 @@ void Contour2::resetContour2(){
     _yContour2.push_back({2147483647,0,0}); 
 }
 
+
+
+
+
+
+void Contour3::updateContour3(int start, int end, int y2){
+    bool flag = false;
+    bool flag2 = false;
+    int is = 0;
+    int ie = 0;
+    // cout << start << " ," << end << endl;
+    for (list<vector<int>>::iterator i = _yContour3.begin(); i != _yContour3.end(); i++){
+        is++;
+        if (((*i).front() == start) && (flag == false)){
+            (*i) = {start, (*i)[1], y2};
+            flag = true;
+            
+            // cout << "is "<<is->front() << endl;
+            break;
+        }
+        if (((*i).front() > start) && (flag == false)){
+            insertBefore(i,{ start, (*i)[1], y2 });
+            flag = true;
+            
+            // cout << "is "<<is->front() << endl;
+            break;
+        }
+        
+    }
+
+    for (list<vector<int>>::iterator i = _yContour3.begin(); i != _yContour3.end(); i++){
+        ie++;
+        if (((*i).front() == end) && (flag2 == false)){
+            (*i) = {end, y2, (*i)[2]};
+            flag2 = true;
+            
+            // cout << "ie "<<ie->front() << endl;
+            break;
+        }
+
+        if (((*i).front() > end) && (flag2 == false)){
+            insertBefore(i,{ end, y2, (*i)[1] });
+            flag2 = true;
+            
+            // cout << "ie "<<ie->front() << endl;
+            break;
+        }
+        
+    }
+
+    // list<vector<int>>::iterator istemp = is;
+    // list<vector<int>>::iterator Preistemp = is;
+    // istemp++;
+    // Preistemp--;
+    // cout << is->front() << endl;
+    // cout << istemp->front() << endl;
+    // cout << ie->front() << endl;
+    // if(((istemp)->front())!=ie->front()) {
+    //     _yContour3.erase(istemp,--ie);
+    // }
+
+    if (next(_yContour3.begin(), is+1) != next(_yContour3.begin(), ie)){
+        _yContour3.erase(next(_yContour3.begin(), is), next(_yContour3.begin(), ie-1));
+    }
+    if (getPreY1(next(_yContour3.begin(), is)) == getPreY2(next(_yContour3.begin(), is))) _yContour3.erase(next(_yContour3.begin(), is));
+    // if (getPreY1(ie) == getPreY2(ie)) _yContour2.erase(_yContour2.begin()+ie);
+
+}
+
+int Contour3::maxInRegion3(int startX, int endX){
+    int maxi = 0;
+    // list<vector<int>>::iterator temp =  _yContour3.begin();
+    for (list<vector<int>>::iterator i = _yContour3.begin(),temp = ++_yContour3.begin(); temp != _yContour3.end(); i = temp++){
+        // temp = i;
+        // temp++;
+        if (((*i).front() > startX) && ((*i).front() < endX)){
+            if (max(getPreY1(i),getPreY2(i)) > maxi){
+                maxi = max(getPreY1(i),getPreY2(i));
+            }
+        }
+        if ((*i).front() == startX) maxi = max(maxi, getPreY2(i));
+        if ((*i).front() == endX) maxi = max(maxi, getPreY1(i));
+
+        if (((*i).front() < startX)  && ((*(temp)).front() > endX)){
+            maxi = getPreY2(i);
+        }
+
+        if ((*i).front() > endX) return maxi; //提早結束
+    }
+
+
+
+    int ma = 0;
+    for ( auto it = _yContour3.begin() ; it != _yContour3.end() ; it++ ) {
+        if ((*it).front() <= startX ) ma = (*it)[2] ;
+        else if (((*it).front() > startX ) && ((*it).front() < endX ) ) {
+            ma = (ma > (*it)[2] ) ? ma : (*it)[2] ; 
+        }
+    }
+
+    if (maxi != ma) {
+        cout << startX << ", "<< endX << ", " << maxi << ", " << ma << endl;
+        cout << "---------" << endl;
+           for ( auto it = _yContour3.begin() ; it != _yContour3.end() ; it++ ) {
+
+        cout  << "["<<(*it)[0]<< ", "<< (*it)[1]  << ", "<< (*it)[2] << "], ";
+           }
+           cout<< endl;
+           cin.get();
+    }
+    // return maxi;
+    return ma;
+}
+
+void Contour3::resetContour3(){
+    _yContour3.clear();
+    _yContour3.push_back({0,0,0}); 
+    _yContour3.push_back({2147483647,0,0}); 
+}
 
 
