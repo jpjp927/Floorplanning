@@ -64,7 +64,9 @@ void Floorplanner::parseInput(fstream& input_blk_file,fstream& input_net_file)
 void Floorplanner::floorplan()
 {
     SortBlk();
-    CreateBtree();
+    deterInit();
+    // _BstarTree->print_bin_tree(_BstarTree->getRoot());
+    // CreateBtree();
     // _nodeQueue.push(_BstarTree->getRoot());
     // _Contour->resetContour();
     // _Contour2->resetContour2();
@@ -102,9 +104,10 @@ void Floorplanner::floorplan()
     // }
 
     // cout << _legalbestTree->getMaxY() << endl;
-    
+    time = get_time();
     plot("plot.png");
     showResult();
+    write();
     
     return;
 }
@@ -122,22 +125,36 @@ void Floorplanner::CreateBtree()
 void Floorplanner::SortBlk()
 
 {
-    int i,l;
-    for (i=0;i<_blkArray.size()/2;i++){
-        for (l=0;l<_blkArray.size()/2;l++){
+    // int i,l;
+    // for (i=0;i<_blkArray.size()/2;i++){
+    //     for (l=0;l<_blkArray.size()/2;l++){
+    //         if (_blkArray[i]->getWidth() > _blkArray[l]->getWidth()){
+    //             Block* tempBlk;
+    //             tempBlk = _blkArray[i];
+    //             _blkArray[i] = _blkArray[l];
+    //             _blkArray[l] = tempBlk;
+    //             _blkName2Id[_blkArray[i]->getName()] = i;
+    //             _blkName2Id[_blkArray[l]->getName()] = l;
+    //         }
+    //     }
+    // }
+    // for (i=_blkArray.size()/2;i<_blkArray.size()-_blkArray.size()/2;i++){
+    //     for (l=_blkArray.size()/2;l<_blkArray.size()-_blkArray.size()/2;l++){
+    //         if (_blkArray[i]->getWidth() < _blkArray[l]->getWidth()){
+    //             Block* tempBlk;
+    //             tempBlk = _blkArray[i];
+    //             _blkArray[i] = _blkArray[l];
+    //             _blkArray[l] = tempBlk;
+    //             _blkName2Id[_blkArray[i]->getName()] = i;
+    //             _blkName2Id[_blkArray[l]->getName()] = l;
+    //         }
+    //     }
+    // }
+
+     int i,l;
+    for (i=0;i<_blkArray.size();i++){
+        for (l=0;l<_blkArray.size();l++){
             if (_blkArray[i]->getWidth() > _blkArray[l]->getWidth()){
-                Block* tempBlk;
-                tempBlk = _blkArray[i];
-                _blkArray[i] = _blkArray[l];
-                _blkArray[l] = tempBlk;
-                _blkName2Id[_blkArray[i]->getName()] = i;
-                _blkName2Id[_blkArray[l]->getName()] = l;
-            }
-        }
-    }
-    for (i=_blkArray.size()/2;i<_blkArray.size()-_blkArray.size()/2;i++){
-        for (l=_blkArray.size()/2;l<_blkArray.size()-_blkArray.size()/2;l++){
-            if (_blkArray[i]->getWidth() < _blkArray[l]->getWidth()){
                 Block* tempBlk;
                 tempBlk = _blkArray[i];
                 _blkArray[i] = _blkArray[l];
@@ -384,21 +401,28 @@ bool Floorplanner::bestTreeUpdate(){
     }
     if ((_BstarTree->getMaxX() < _OutlineW) && (_BstarTree->getMaxY() < _OutlineH) && (_legalbestTree->getCost() > _BstarTree->getCost())){
         _legalbestTree->replace(_BstarTree);
-        cout << _BstarTree->getMaxX() << ", "<< _BstarTree->getMaxY() << endl;
-        cout << " !!!!!!!!!!!!!!!!!!!!!!" << endl;
+        // cout << _BstarTree->getMaxX() << ", "<< _BstarTree->getMaxY() << endl;
+        // cout << " !!!!!!!!!!!!!!!!!!!!!!" << endl;
     }
     return flag;
 }
 
 void Floorplanner::SA(){
-    double T = 1000;
-    int P = 1000;
-    double decay = 0.99;
-    int heatTimes = 5;
-    int reT = 100;
-    srand(5435);
+    double T = 1000.;
+    int P = _blkArray.size() * 20;
+    double decay = 0.995;
+    int heatTimes = 2;
+    double reT = 500.;
+    srand(1127);
+    // double T = 1000.;
+    // int P = _blkArray.size() * 20;
+    // double decay = 0.99;
+    // int heatTimes = 2;
+    // double reT = 500.;
+    // srand(1127);
 
     while (T >= 0.01){
+        _BstarTree->replace(_BestTree);
         for (int i=0;i<P;i++){
             int Case = rand() % 3;
             Node* node = ramdomPickNode();
@@ -410,7 +434,7 @@ void Floorplanner::SA(){
             switch (Case){
             case 0: //rotate
                 node->Rotate();
-                node2->Rotate();
+                // node2->Rotate();
                 // _Contour->resetContour();
                 // _Contour2->resetContour2();
                 _Contour3->resetContour3();
@@ -424,6 +448,13 @@ void Floorplanner::SA(){
             case 2: // delete and insert
                 _BstarTree->deleteNode(node);
                 _BstarTree->randomInsert(node, _BstarTree->getRoot());
+
+
+                // while ((node == node2) || node2->AmIRoot()){
+                //     node2 = ramdomPickNode();
+                // }
+                // _BstarTree->randomInsert(node, node2);
+
                 // _Contour->resetContour();
                 // _Contour2->resetContour2();
                 _Contour3->resetContour3();
@@ -523,7 +554,37 @@ Node* Floorplanner::ramdomPickNode2(){
     return now;
 }
 
+Node* Floorplanner::rightestNode(Node* node){
+    if (node->getChild(0) != nullptr) return rightestNode(node->getChild(0));
+    else return node;
+}
+Node* Floorplanner::leftestNode(Node* node){
+    if (node->getChild(1) != nullptr) return leftestNode(node->getChild(1));
+    else return node;
+}
 
+
+void Floorplanner::deterInit(){
+    Node* root = new Node(_blkArray[0]);
+    root->setRoot(true);
+    _BstarTree->insert(nullptr, root, 0);
+    int w = root->getBlock()->getWidth();
+    Node* nowHead = root;
+    for (int i=1;i<_blkArray.size();i++){
+        
+        Node* node = new Node(_blkArray[i]);
+        if(node->getBlock()->getWidth()+w > _OutlineW){
+            _BstarTree->insert(rightestNode(nowHead), node, 0);
+            w = node->getBlock()->getWidth();
+            nowHead = node;
+        }
+        else {
+            _BstarTree->insert(leftestNode(nowHead), node, 1);
+            w += node->getBlock()->getWidth();
+        }
+            // cout << "hihi" << node->getBlock()->getName()<<endl;
+    }
+}
 
 
 
@@ -532,10 +593,27 @@ void Floorplanner::showResult(){
     cout << " Wire Length: " << _BstarTree->getWL() << endl;
     cout << " Area: " << _BstarTree->getArea() << endl;
     cout << " Cost: " << _BstarTree->getCost() << endl;
-    cout << " Program runtime: " << get_time() << " sec\n" << endl;
+    cout << " Program runtime: " << time << " sec\n" << endl;
     cout << "*************************" << endl;
 }
 
+void Floorplanner::write(){
+    ofstream File;
+	File.open("output.rpt");
+    
+    double costNoNorn = _BstarTree->getArea()*_Alpha + (1-_Alpha)*_BstarTree->getWL();
+    File<< costNoNorn << endl;
+    File << _BstarTree->getWL() << endl;
+    File << _BstarTree->getArea() << endl;
+    File << _BstarTree->getMaxX() << " " << _BstarTree->getMaxY() << endl;
+    File << time << endl;
+
+    for (int i=0; i<_blkArray.size() ; i++){
+        File << _blkArray[i]->getName() << " " << _blkArray[i]->getX1() << " " << _blkArray[i]->getY1()  << " " << _blkArray[i]->getX2() << " " << _blkArray[i]->getY2() << " " << endl;
+    }
+    File.close();
+
+}
 
 void Floorplanner::plot(string file_name)
 {

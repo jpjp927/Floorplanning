@@ -36,6 +36,7 @@ int main(int argc, char** argv)
         exit(1);
     }
 
+    
     Floorplanner* fp = new Floorplanner(input_blk, input_net);
     fp->setAlpha(alpha);
     fp->floorplan();

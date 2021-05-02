@@ -105,7 +105,28 @@ void BstarTree::randomInsert(Node* node, Node* pos){
         insert(pos,node,rl);
     }
     else randomInsert(node, pos->getChild(rl));
+    // if ((node == pos) || pos->AmIRoot()){
+    //     pos = root;
+    //     int rl = rand() % 2;
+    //     if (pos->getChild(rl) == nullptr){
+    //         insert(pos,node,rl);
+    //     }
+    //     else randomInsert(node, pos->getChild(rl));
+
+    //     return;
+    // }
     
+
+    // int posParent;
+    // if (pos->getParent()->getChild(0) == pos) posParent = 0;
+    // else posParent = 1;
+
+    // node->setParent(pos->getParent());
+    // node->setChild(pos, 0);
+    // node->setChild(nullptr, 1);
+    // pos->getParent()->setChild(node, posParent);
+    // pos->setParent(node);
+
 }
 
 
@@ -428,23 +449,23 @@ void Contour3::updateContour3(int start, int end, int y2){
 int Contour3::maxInRegion3(int startX, int endX){
     int maxi = 0;
     // list<vector<int>>::iterator temp =  _yContour3.begin();
-    for (list<vector<int>>::iterator i = _yContour3.begin(),temp = ++_yContour3.begin(); temp != _yContour3.end(); i = temp++){
-        // temp = i;
-        // temp++;
-        if (((*i).front() > startX) && ((*i).front() < endX)){
-            if (max(getPreY1(i),getPreY2(i)) > maxi){
-                maxi = max(getPreY1(i),getPreY2(i));
-            }
-        }
-        if ((*i).front() == startX) maxi = max(maxi, getPreY2(i));
-        if ((*i).front() == endX) maxi = max(maxi, getPreY1(i));
+    // for (list<vector<int>>::iterator i = _yContour3.begin(),temp = ++_yContour3.begin(); temp != _yContour3.end(); i = temp++){
+    //     // temp = i;
+    //     // temp++;
+    //     if (((*i).front() > startX) && ((*i).front() < endX)){
+    //         if (max(getPreY1(i),getPreY2(i)) > maxi){
+    //             maxi = max(getPreY1(i),getPreY2(i));
+    //         }
+    //     }
+    //     if ((*i).front() == startX) maxi = max(maxi, getPreY2(i));
+    //     if ((*i).front() == endX) maxi = max(maxi, getPreY1(i));
 
-        if (((*i).front() < startX)  && ((*(temp)).front() > endX)){
-            maxi = getPreY2(i);
-        }
+    //     if (((*i).front() < startX)  && ((*(temp)).front() > endX)){
+    //         maxi = getPreY2(i);
+    //     }
 
-        if ((*i).front() > endX) return maxi; //提早結束
-    }
+    //     if ((*i).front() > endX) return maxi; //提早結束
+    // }
 
 
 
@@ -456,16 +477,16 @@ int Contour3::maxInRegion3(int startX, int endX){
         }
     }
 
-    if (maxi != ma) {
-        cout << startX << ", "<< endX << ", " << maxi << ", " << ma << endl;
-        cout << "---------" << endl;
-           for ( auto it = _yContour3.begin() ; it != _yContour3.end() ; it++ ) {
+    // if (maxi != ma) {
+    //     cout << startX << ", "<< endX << ", " << maxi << ", " << ma << endl;
+    //     cout << "---------" << endl;
+    //        for ( auto it = _yContour3.begin() ; it != _yContour3.end() ; it++ ) {
 
-        cout  << "["<<(*it)[0]<< ", "<< (*it)[1]  << ", "<< (*it)[2] << "], ";
-           }
-           cout<< endl;
-           cin.get();
-    }
+    //     cout  << "["<<(*it)[0]<< ", "<< (*it)[1]  << ", "<< (*it)[2] << "], ";
+    //        }
+    //        cout<< endl;
+    //        cin.get();
+    // }
     // return maxi;
     return ma;
 }

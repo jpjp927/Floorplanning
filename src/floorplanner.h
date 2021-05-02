@@ -48,9 +48,12 @@ public:
     void calCost(); 
     bool bestTreeUpdate();
     void SA();
+    void deterInit();
     Node* ramdomPickNode();
     Node* ramdomPickNode2();
-
+    Node* rightestNode(Node* node);
+    Node* leftestNode(Node* node);
+    void write();
 
     int getOutlineW() {return _OutlineW;}
 
@@ -88,6 +91,7 @@ private:
     queue<Node*>        _nodeQueueR;
     queue<Node*>        _nodeQueueL;
     clock_t start_time;
+    double time;
     // Clean up partitioner
     void clear();
 };
