@@ -7,7 +7,7 @@ using namespace std;
 class BstarTree
 {
 public:
-    BstarTree() : root(nullptr), cost(2147483647), _wirelength(0.),_maxX(0) ,_maxY(0),_Area(1) {}
+    BstarTree() : root(nullptr), cost(2147483647), _wirelength(0.),_maxX(0) ,_maxY(0),_Area(0) {}
     ~BstarTree()  { }
 
     Node* getRoot() const{return root;}

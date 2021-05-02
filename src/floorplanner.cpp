@@ -87,7 +87,9 @@ void Floorplanner::floorplan()
     _BestTree->replace(_BstarTree);
     _PreTree->replace(_BstarTree);
     _legalbestTree->replace(_BstarTree);
-    bestTreeUpdate();
+    // bestTreeUpdate();
+    
+
     
     SA();
     // _BstarTree->replace(_BestTree);
@@ -386,8 +388,12 @@ void Floorplanner::calCost(){
     double dW = max(_BstarTree->getMaxX() - _OutlineW, 0);
     double dH = max(_BstarTree->getMaxY() - _OutlineH, 0);
     // _BstarTree->setCost(cost);
-    if (((_BstarTree->getMaxX() - _OutlineW)> 0) || (_BstarTree->getMaxY() - _OutlineH) > 0)
-        _BstarTree->setCost(100000*dW/_OutlineW  + 100000*dH/_OutlineH);
+    if (((_BstarTree->getMaxX() - (_OutlineW-50) )> 0) && (_BstarTree->getMaxY() - (_OutlineH-50)) > 0)
+        _BstarTree->setCost(100000*dW/_OutlineW  + 100000*dH/(_OutlineH));
+    else if (((_BstarTree->getMaxX() - (_OutlineW-50))> 0))
+        _BstarTree->setCost(200000*dW/_OutlineW);
+    else if (((_BstarTree->getMaxY() - (_OutlineH-50))> 0))
+        _BstarTree->setCost(200000*dH/(_OutlineH));
     else _BstarTree->setCost(cost);
 }
 
@@ -399,7 +405,8 @@ bool Floorplanner::bestTreeUpdate(){
         // cout << "hi " << endl;
         flag = true;
     }
-    if ((_BstarTree->getMaxX() < _OutlineW) && (_BstarTree->getMaxY() < _OutlineH) && (_legalbestTree->getCost() > _BstarTree->getCost())){
+    // if ((_BstarTree->getMaxX() < _OutlineW) && (_BstarTree->getMaxY() < _OutlineH) && (_legalbestTree->getCost() > _BstarTree->getCost())){
+    if ((_BstarTree->getMaxX() < _OutlineW) && (_BstarTree->getMaxY() < _OutlineH)){
         _legalbestTree->replace(_BstarTree);
         // cout << _BstarTree->getMaxX() << ", "<< _BstarTree->getMaxY() << endl;
         // cout << " !!!!!!!!!!!!!!!!!!!!!!" << endl;
@@ -424,7 +431,7 @@ void Floorplanner::SA(){
     while (T >= 0.01){
         _BstarTree->replace(_BestTree);
         for (int i=0;i<P;i++){
-            int Case = rand() % 3;
+            int Case = rand() % 4;
             Node* node = ramdomPickNode();
             Node* node2 = ramdomPickNode();
             // _BstarTree->print_bin_tree(_BstarTree->getRoot());
